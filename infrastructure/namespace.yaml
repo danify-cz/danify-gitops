@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: danify
+  labels:
+    app.kubernetes.io/name: danify
+    app.kubernetes.io/part-of: danify

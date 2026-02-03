@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: danify-dev
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/danify-cz/danify-gitops.git
+    path: environments/dev
+    targetRevision: main
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: danify
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        maxDuration: 3m
+        factor: 2

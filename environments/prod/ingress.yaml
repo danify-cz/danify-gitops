@@ -1,0 +1,61 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: danify-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: '50m'
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - danify.cz
+        - www.danify.cz
+      secretName: danify-landing-tls
+    - hosts:
+        - app.danify.cz
+      secretName: danify-fe-tls
+    - hosts:
+        - api.danify.cz
+      secretName: danify-api-tls
+  rules:
+    - host: danify.cz
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: danify-landing
+                port:
+                  number: 80
+    - host: www.danify.cz
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: danify-landing
+                port:
+                  number: 80
+    - host: app.danify.cz
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: danify-fe
+                port:
+                  number: 80
+    - host: api.danify.cz
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: danify-api
+                port:
+                  number: 3000
