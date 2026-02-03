@@ -9,8 +9,8 @@ resources:
   - ../base/danify-be
   - ../base/postgresql
   - ingress.yaml
-  - ghcr-secret.yaml
   - basic-auth-secret.yaml
+  # ghcr-secret.yaml - managed outside ArgoCD
 
 images:
   - name: danify-landing
