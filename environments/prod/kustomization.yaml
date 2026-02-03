@@ -10,6 +10,7 @@ resources:
   - ../base/postgresql
   - ingress.yaml
   - ghcr-secret.yaml
+  - basic-auth-secret.yaml
 
 images:
   - name: danify-landing
