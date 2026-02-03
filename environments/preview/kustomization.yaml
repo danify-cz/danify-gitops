@@ -9,6 +9,7 @@ resources:
   - ../base/danify-be
   - ../base/postgresql
   - ingress.yaml
+  - danify-fe-config.yaml
   # ghcr-secret.yaml - managed outside ArgoCD
 
 images:

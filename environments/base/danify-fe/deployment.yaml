@@ -57,6 +57,10 @@ spec:
               mountPath: /var/cache/nginx
             - name: run
               mountPath: /var/run
+            - name: config
+              mountPath: /usr/share/nginx/html/config.json
+              subPath: config.json
+              readOnly: true
       volumes:
         - name: tmp
           emptyDir: {}
@@ -64,3 +68,6 @@ spec:
           emptyDir: {}
         - name: run
           emptyDir: {}
+        - name: config
+          configMap:
+            name: danify-fe-config
