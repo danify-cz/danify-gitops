@@ -14,13 +14,13 @@ resources:
 images:
   - name: danify-landing
     newName: ghcr.io/danify-cz/danify-landing
-    newTag: preview
+    newTag: dev  # TODO: change to preview when release branch builds
   - name: danify-fe
     newName: ghcr.io/danify-cz/danify-fe
-    newTag: preview
+    newTag: dev  # TODO: change to preview when release branch builds
   - name: danify-api
     newName: ghcr.io/danify-cz/danify-api
-    newTag: preview
+    newTag: dev  # TODO: change to preview when release branch builds
 
 patches:
   - target:
