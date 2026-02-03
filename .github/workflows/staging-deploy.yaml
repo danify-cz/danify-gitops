@@ -1,0 +1,98 @@
+name: Staging Deploy
+
+on:
+  repository_dispatch:
+    types: [staging-deploy]
+
+jobs:
+  update-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Update image tags
+        run: |
+          cd environments/preview
+
+          DANIFY_API_VERSION="${{ github.event.client_payload.danify_api_version }}"
+          DANIFY_FE_VERSION="${{ github.event.client_payload.danify_fe_version }}"
+          DANIFY_LANDING_VERSION="${{ github.event.client_payload.danify_landing_version }}"
+
+          echo "Received versions:"
+          echo "  danify-api: $DANIFY_API_VERSION"
+          echo "  danify-fe: $DANIFY_FE_VERSION"
+          echo "  danify-landing: $DANIFY_LANDING_VERSION"
+
+          # Update danify-api image tag if version provided
+          if [ -n "$DANIFY_API_VERSION" ] && [ "$DANIFY_API_VERSION" != "null" ]; then
+            echo "Updating danify-api to $DANIFY_API_VERSION"
+            sed -i "s/newTag: .* # danify-api/newTag: \"$DANIFY_API_VERSION\" # danify-api/" kustomization.yaml || \
+            sed -i "/name: danify-api/{n;n;s/newTag: .*/newTag: \"$DANIFY_API_VERSION\"/}" kustomization.yaml
+          fi
+
+          # Update danify-fe image tag if version provided
+          if [ -n "$DANIFY_FE_VERSION" ] && [ "$DANIFY_FE_VERSION" != "null" ]; then
+            echo "Updating danify-fe to $DANIFY_FE_VERSION"
+            sed -i "s/newTag: .* # danify-fe/newTag: \"$DANIFY_FE_VERSION\" # danify-fe/" kustomization.yaml || \
+            sed -i "/name: danify-fe/{n;n;s/newTag: .*/newTag: \"$DANIFY_FE_VERSION\"/}" kustomization.yaml
+          fi
+
+          # Update danify-landing image tag if version provided
+          if [ -n "$DANIFY_LANDING_VERSION" ] && [ "$DANIFY_LANDING_VERSION" != "null" ]; then
+            echo "Updating danify-landing to $DANIFY_LANDING_VERSION"
+            sed -i "s/newTag: .* # danify-landing/newTag: \"$DANIFY_LANDING_VERSION\" # danify-landing/" kustomization.yaml || \
+            sed -i "/name: danify-landing/{n;n;s/newTag: .*/newTag: \"$DANIFY_LANDING_VERSION\"/}" kustomization.yaml
+          fi
+
+          # Update version in fe-config if it exists
+          if [ -f "danify-fe-config.yaml" ]; then
+            # Determine which version to use for config (prefer fe version, fallback to api)
+            CONFIG_VERSION="${DANIFY_FE_VERSION:-$DANIFY_API_VERSION}"
+            if [ -n "$CONFIG_VERSION" ] && [ "$CONFIG_VERSION" != "null" ]; then
+              echo "Updating config version to $CONFIG_VERSION"
+              sed -i "s/\"version\": \".*\"/\"version\": \"$CONFIG_VERSION\"/" danify-fe-config.yaml
+            fi
+          fi
+
+          echo "Updated kustomization.yaml:"
+          cat kustomization.yaml
+
+      - name: Commit and push
+        run: |
+          git add environments/preview/
+
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+          VERSIONS=""
+          [ -n "${{ github.event.client_payload.danify_api_version }}" ] && [ "${{ github.event.client_payload.danify_api_version }}" != "null" ] && VERSIONS="$VERSIONS danify-api@${{ github.event.client_payload.danify_api_version }}"
+          [ -n "${{ github.event.client_payload.danify_fe_version }}" ] && [ "${{ github.event.client_payload.danify_fe_version }}" != "null" ] && VERSIONS="$VERSIONS danify-fe@${{ github.event.client_payload.danify_fe_version }}"
+          [ -n "${{ github.event.client_payload.danify_landing_version }}" ] && [ "${{ github.event.client_payload.danify_landing_version }}" != "null" ] && VERSIONS="$VERSIONS danify-landing@${{ github.event.client_payload.danify_landing_version }}"
+
+          git commit -m "chore(preview): update images -$VERSIONS [skip ci]"
+          git push
+
+      - name: Summary
+        run: |
+          echo "## Staging Deploy Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| App | Version |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| danify-api | ${{ github.event.client_payload.danify_api_version || 'not updated' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| danify-fe | ${{ github.event.client_payload.danify_fe_version || 'not updated' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| danify-landing | ${{ github.event.client_payload.danify_landing_version || 'not updated' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Source: ${{ github.event.client_payload.source_repo }}" >> $GITHUB_STEP_SUMMARY

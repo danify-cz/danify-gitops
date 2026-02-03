@@ -1,0 +1,97 @@
+name: Dev Deploy
+
+on:
+  repository_dispatch:
+    types: [dev-deploy]
+  workflow_dispatch:
+    inputs:
+      danify_api_tag:
+        description: 'danify-api image tag'
+        required: false
+        default: 'dev'
+      danify_fe_tag:
+        description: 'danify-fe image tag'
+        required: false
+        default: 'dev'
+      danify_landing_tag:
+        description: 'danify-landing image tag'
+        required: false
+        default: 'dev'
+
+jobs:
+  update-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Determine image tags
+        id: tags
+        run: |
+          # Use workflow_dispatch inputs or repository_dispatch payload
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "danify_api_tag=${{ inputs.danify_api_tag }}" >> $GITHUB_OUTPUT
+            echo "danify_fe_tag=${{ inputs.danify_fe_tag }}" >> $GITHUB_OUTPUT
+            echo "danify_landing_tag=${{ inputs.danify_landing_tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "danify_api_tag=${{ github.event.client_payload.danify_api_tag || 'dev' }}" >> $GITHUB_OUTPUT
+            echo "danify_fe_tag=${{ github.event.client_payload.danify_fe_tag || 'dev' }}" >> $GITHUB_OUTPUT
+            echo "danify_landing_tag=${{ github.event.client_payload.danify_landing_tag || 'dev' }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update image tags
+        run: |
+          cd environments/dev
+
+          DANIFY_API_TAG="${{ steps.tags.outputs.danify_api_tag }}"
+          DANIFY_FE_TAG="${{ steps.tags.outputs.danify_fe_tag }}"
+          DANIFY_LANDING_TAG="${{ steps.tags.outputs.danify_landing_tag }}"
+
+          echo "Updating images to:"
+          echo "  danify-api: $DANIFY_API_TAG"
+          echo "  danify-fe: $DANIFY_FE_TAG"
+          echo "  danify-landing: $DANIFY_LANDING_TAG"
+
+          # Update image tags using sed
+          sed -i "s/newTag: .* # danify-api/newTag: $DANIFY_API_TAG # danify-api/" kustomization.yaml 2>/dev/null || true
+          sed -i "s/newTag: .* # danify-fe/newTag: $DANIFY_FE_TAG # danify-fe/" kustomization.yaml 2>/dev/null || true
+          sed -i "s/newTag: .* # danify-landing/newTag: $DANIFY_LANDING_TAG # danify-landing/" kustomization.yaml 2>/dev/null || true
+
+          # Update version in fe-config
+          if [ -f "danify-fe-config.yaml" ]; then
+            sed -i "s/\"version\": \".*\"/\"version\": \"$DANIFY_FE_TAG\"/" danify-fe-config.yaml
+          fi
+
+          echo "Updated kustomization.yaml:"
+          cat kustomization.yaml
+
+      - name: Commit and push
+        run: |
+          git add environments/dev/
+
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+          git commit -m "chore(dev): update images [skip ci]"
+          git push
+
+      - name: Summary
+        run: |
+          echo "## Dev Deploy Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| App | Tag |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|-----|" >> $GITHUB_STEP_SUMMARY
+          echo "| danify-api | ${{ steps.tags.outputs.danify_api_tag }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| danify-fe | ${{ steps.tags.outputs.danify_fe_tag }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| danify-landing | ${{ steps.tags.outputs.danify_landing_tag }} |" >> $GITHUB_STEP_SUMMARY
