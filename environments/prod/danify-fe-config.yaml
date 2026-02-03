@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: danify-fe-config
+data:
+  config.json: |
+    {
+      "apiUrl": "https://api.danify.cz",
+      "version": "1.0.0"
+    }
