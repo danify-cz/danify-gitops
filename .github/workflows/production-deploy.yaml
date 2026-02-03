@@ -1,0 +1,107 @@
+name: Production Deploy
+
+on:
+  repository_dispatch:
+    types: [production-deploy]
+  workflow_dispatch:
+    inputs:
+      danify_api_version:
+        description: 'danify-api version'
+        required: false
+      danify_fe_version:
+        description: 'danify-fe version'
+        required: false
+      danify_landing_version:
+        description: 'danify-landing version'
+        required: false
+
+jobs:
+  update-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Determine versions
+        id: versions
+        run: |
+          # Use workflow_dispatch inputs or repository_dispatch payload
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "danify_api_version=${{ inputs.danify_api_version }}" >> $GITHUB_OUTPUT
+            echo "danify_fe_version=${{ inputs.danify_fe_version }}" >> $GITHUB_OUTPUT
+            echo "danify_landing_version=${{ inputs.danify_landing_version }}" >> $GITHUB_OUTPUT
+          else
+            echo "danify_api_version=${{ github.event.client_payload.danify_api_version }}" >> $GITHUB_OUTPUT
+            echo "danify_fe_version=${{ github.event.client_payload.danify_fe_version }}" >> $GITHUB_OUTPUT
+            echo "danify_landing_version=${{ github.event.client_payload.danify_landing_version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update image tags
+        run: |
+          cd environments/prod
+
+          DANIFY_API_VERSION="${{ steps.versions.outputs.danify_api_version }}"
+          DANIFY_FE_VERSION="${{ steps.versions.outputs.danify_fe_version }}"
+          DANIFY_LANDING_VERSION="${{ steps.versions.outputs.danify_landing_version }}"
+
+          echo "Received versions:"
+          echo "  danify-api: $DANIFY_API_VERSION"
+          echo "  danify-fe: $DANIFY_FE_VERSION"
+          echo "  danify-landing: $DANIFY_LANDING_VERSION"
+
+          # Update danify-api image tag if version provided
+          if [ -n "$DANIFY_API_VERSION" ] && [ "$DANIFY_API_VERSION" != "null" ]; then
+            echo "Updating danify-api to $DANIFY_API_VERSION"
+            sed -i "s/newTag: .* # danify-api/newTag: \"$DANIFY_API_VERSION\" # danify-api/" kustomization.yaml
+          fi
+
+          # Update danify-fe image tag if version provided
+          if [ -n "$DANIFY_FE_VERSION" ] && [ "$DANIFY_FE_VERSION" != "null" ]; then
+            echo "Updating danify-fe to $DANIFY_FE_VERSION"
+            sed -i "s/newTag: .* # danify-fe/newTag: \"$DANIFY_FE_VERSION\" # danify-fe/" kustomization.yaml
+          fi
+
+          # Update danify-landing image tag if version provided
+          if [ -n "$DANIFY_LANDING_VERSION" ] && [ "$DANIFY_LANDING_VERSION" != "null" ]; then
+            echo "Updating danify-landing to $DANIFY_LANDING_VERSION"
+            sed -i "s/newTag: .* # danify-landing/newTag: \"$DANIFY_LANDING_VERSION\" # danify-landing/" kustomization.yaml
+          fi
+
+          echo "Updated kustomization.yaml:"
+          cat kustomization.yaml
+
+      - name: Commit and push
+        run: |
+          git add environments/prod/
+
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+          VERSIONS=""
+          [ -n "${{ steps.versions.outputs.danify_api_version }}" ] && [ "${{ steps.versions.outputs.danify_api_version }}" != "null" ] && VERSIONS="$VERSIONS danify-api@${{ steps.versions.outputs.danify_api_version }}"
+          [ -n "${{ steps.versions.outputs.danify_fe_version }}" ] && [ "${{ steps.versions.outputs.danify_fe_version }}" != "null" ] && VERSIONS="$VERSIONS danify-fe@${{ steps.versions.outputs.danify_fe_version }}"
+          [ -n "${{ steps.versions.outputs.danify_landing_version }}" ] && [ "${{ steps.versions.outputs.danify_landing_version }}" != "null" ] && VERSIONS="$VERSIONS danify-landing@${{ steps.versions.outputs.danify_landing_version }}"
+
+          git commit -m "chore(prod): update images -$VERSIONS [skip ci]"
+          git push
+
+      - name: Summary
+        run: |
+          echo "## Production Deploy Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| App | Version |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| danify-api | ${{ steps.versions.outputs.danify_api_version || 'not updated' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| danify-fe | ${{ steps.versions.outputs.danify_fe_version || 'not updated' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| danify-landing | ${{ steps.versions.outputs.danify_landing_version || 'not updated' }} |" >> $GITHUB_STEP_SUMMARY
