@@ -15,21 +15,21 @@ data:
       discord:
         method: POST
         body: |
-          {"content":"✅ **{{.app.metadata.name}}** deployed to {{.app.spec.destination.namespace}}","embeds":[{"color":3066993,"fields":[{"name":"Revision","value":"{{.app.status.sync.revision}}","inline":true}]}]}
+          {"content":"✅ **{{.app.metadata.name}}** deployed","embeds":[{"color":3066993,"fields":[{"name":"App","value":"{{.app.metadata.name}}","inline":true},{"name":"Namespace","value":"{{.app.spec.destination.namespace}}","inline":true},{"name":"Revision","value":"{{.app.status.sync.revision | substr 0 7}}","inline":true}]}]}
 
   template.app-sync-failed: |
     webhook:
       discord:
         method: POST
         body: |
-          {"content":"❌ **{{.app.metadata.name}}** sync failed in {{.app.spec.destination.namespace}}"}
+          {"content":"❌ **{{.app.metadata.name}}** sync failed","embeds":[{"color":15158332,"fields":[{"name":"App","value":"{{.app.metadata.name}}","inline":true},{"name":"Namespace","value":"{{.app.spec.destination.namespace}}","inline":true}]}]}
 
   template.app-health-degraded: |
     webhook:
       discord:
         method: POST
         body: |
-          {"content":"⚠️ **{{.app.metadata.name}}** health degraded - status: {{.app.status.health.status}}"}
+          {"content":"⚠️ **{{.app.metadata.name}}** health degraded","embeds":[{"color":16776960,"fields":[{"name":"App","value":"{{.app.metadata.name}}","inline":true},{"name":"Namespace","value":"{{.app.spec.destination.namespace}}","inline":true},{"name":"Health","value":"{{.app.status.health.status}}","inline":true}]}]}
 
   trigger.on-deployed: |
     - when: app.status.operationState.phase in ['Succeeded']
