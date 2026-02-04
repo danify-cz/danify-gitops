@@ -16,13 +16,13 @@ resources:
 images:
   - name: danify-landing
     newName: ghcr.io/danify-cz/danify-landing
-    newTag: "1.0.0" # danify-landing
+    newTag: "1.0.1" # danify-landing
   - name: danify-fe
     newName: ghcr.io/danify-cz/danify-fe
-    newTag: "1.0.0" # danify-fe
+    newTag: "1.1.1" # danify-fe
   - name: danify-api
     newName: ghcr.io/danify-cz/danify-api
-    newTag: "1.0.0" # danify-api
+    newTag: "1.1.1" # danify-api
 
 patches:
   - target:
