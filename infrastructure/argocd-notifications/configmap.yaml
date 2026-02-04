@@ -42,3 +42,12 @@ data:
   trigger.on-health-degraded: |
     - when: app.status.health.status == 'Degraded'
       send: [app-health-degraded]
+
+  # Global subscriptions - all apps get notifications
+  subscriptions: |
+    - recipients:
+      - discord
+      triggers:
+      - on-deployed
+      - on-sync-failed
+      - on-health-degraded
