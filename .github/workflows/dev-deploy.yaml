@@ -38,14 +38,16 @@ jobs:
         id: tags
         run: |
           # Use workflow_dispatch inputs or repository_dispatch payload
+          # Empty string means "don't update this app" (wasn't built)
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             echo "danify_api_tag=${{ inputs.danify_api_tag }}" >> $GITHUB_OUTPUT
             echo "danify_fe_tag=${{ inputs.danify_fe_tag }}" >> $GITHUB_OUTPUT
             echo "danify_landing_tag=${{ inputs.danify_landing_tag }}" >> $GITHUB_OUTPUT
           else
-            echo "danify_api_tag=${{ github.event.client_payload.danify_api_tag || 'dev' }}" >> $GITHUB_OUTPUT
-            echo "danify_fe_tag=${{ github.event.client_payload.danify_fe_tag || 'dev' }}" >> $GITHUB_OUTPUT
-            echo "danify_landing_tag=${{ github.event.client_payload.danify_landing_tag || 'dev' }}" >> $GITHUB_OUTPUT
+            # Don't fallback to 'dev' - empty means skip
+            echo "danify_api_tag=${{ github.event.client_payload.danify_api_tag }}" >> $GITHUB_OUTPUT
+            echo "danify_fe_tag=${{ github.event.client_payload.danify_fe_tag }}" >> $GITHUB_OUTPUT
+            echo "danify_landing_tag=${{ github.event.client_payload.danify_landing_tag }}" >> $GITHUB_OUTPUT
           fi
 
       - name: Update image tags
@@ -56,22 +58,34 @@ jobs:
           DANIFY_FE_TAG="${{ steps.tags.outputs.danify_fe_tag }}"
           DANIFY_LANDING_TAG="${{ steps.tags.outputs.danify_landing_tag }}"
 
-          echo "Updating images to:"
-          echo "  danify-api: $DANIFY_API_TAG"
-          echo "  danify-fe: $DANIFY_FE_TAG"
-          echo "  danify-landing: $DANIFY_LANDING_TAG"
+          echo "Updating images (empty = skip):"
+          echo "  danify-api: ${DANIFY_API_TAG:-'(skip)'}"
+          echo "  danify-fe: ${DANIFY_FE_TAG:-'(skip)'}"
+          echo "  danify-landing: ${DANIFY_LANDING_TAG:-'(skip)'}"
 
-          # Update image tags using sed
-          sed -i "s/newTag: .* # danify-api/newTag: $DANIFY_API_TAG # danify-api/" kustomization.yaml 2>/dev/null || true
-          sed -i "s/newTag: .* # danify-fe/newTag: $DANIFY_FE_TAG # danify-fe/" kustomization.yaml 2>/dev/null || true
-          sed -i "s/newTag: .* # danify-landing/newTag: $DANIFY_LANDING_TAG # danify-landing/" kustomization.yaml 2>/dev/null || true
-
-          # Update version in fe-config
-          if [ -f "danify-fe-config.yaml" ]; then
-            sed -i "s/\"version\": \".*\"/\"version\": \"$DANIFY_FE_TAG\"/" danify-fe-config.yaml
+          # Update image tags using sed - only if tag is not empty
+          if [ -n "$DANIFY_API_TAG" ]; then
+            sed -i "s/newTag: .* # danify-api/newTag: $DANIFY_API_TAG # danify-api/" kustomization.yaml
+            echo "Updated danify-api to $DANIFY_API_TAG"
           fi
 
-          echo "Updated kustomization.yaml:"
+          if [ -n "$DANIFY_FE_TAG" ]; then
+            sed -i "s/newTag: .* # danify-fe/newTag: $DANIFY_FE_TAG # danify-fe/" kustomization.yaml
+            echo "Updated danify-fe to $DANIFY_FE_TAG"
+
+            # Update version in fe-config
+            if [ -f "danify-fe-config.yaml" ]; then
+              sed -i "s/\"version\": \".*\"/\"version\": \"$DANIFY_FE_TAG\"/" danify-fe-config.yaml
+            fi
+          fi
+
+          if [ -n "$DANIFY_LANDING_TAG" ]; then
+            sed -i "s/newTag: .* # danify-landing/newTag: $DANIFY_LANDING_TAG # danify-landing/" kustomization.yaml
+            echo "Updated danify-landing to $DANIFY_LANDING_TAG"
+          fi
+
+          echo ""
+          echo "Final kustomization.yaml:"
           cat kustomization.yaml
 
       - name: Commit and push
