@@ -15,7 +15,7 @@ data:
       discord:
         method: POST
         body: |
-          {"content":"✅ **{{.app.metadata.name}}** deployed","embeds":[{"color":3066993,"fields":[{"name":"App","value":"{{.app.metadata.name}}","inline":true},{"name":"Namespace","value":"{{.app.spec.destination.namespace}}","inline":true},{"name":"Revision","value":"{{.app.status.sync.revision | substr 0 7}}","inline":true}]}]}
+          {"content":"✅ **{{.app.metadata.name}}** deployed","embeds":[{"color":3066993,"fields":[{"name":"App","value":"{{.app.metadata.name}}","inline":true},{"name":"Namespace","value":"{{.app.spec.destination.namespace}}","inline":true},{"name":"Revision","value":"{{.app.status.sync.revision | substr 0 7}}","inline":true}{{range .app.status.summary.images}},{"name":"Image","value":"{{.}}","inline":false}{{end}}]}]}
 
   template.app-sync-failed: |
     webhook:
