@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+  namespace: argocd
+data:
+  # Discord service configuration
+  service.discord: |
+    webhook:
+      url: $discord-webhook-url
+
+  # Message templates
+  template.app-deployed: |
+    message: |
+      {{if eq .app.status.operationState.phase "Succeeded"}}✅{{else}}❌{{end}} **{{.app.metadata.name}}** deployment {{.app.status.operationState.phase}}
+
+      **Application:** {{.app.metadata.name}}
+      **Environment:** {{.app.spec.destination.namespace}}
+      **Revision:** {{.app.status.sync.revision | substr 0 7}}
+      **Status:** {{.app.status.operationState.phase}}
+      {{if ne .app.status.operationState.phase "Succeeded"}}
+      **Message:** {{.app.status.operationState.message}}
+      {{end}}
+
+  template.app-health-degraded: |
+    message: |
+      ⚠️ **{{.app.metadata.name}}** health degraded
+
+      **Application:** {{.app.metadata.name}}
+      **Health Status:** {{.app.status.health.status}}
+      **Sync Status:** {{.app.status.sync.status}}
+
+  template.app-sync-failed: |
+    message: |
+      ❌ **{{.app.metadata.name}}** sync failed
+
+      **Application:** {{.app.metadata.name}}
+      **Error:** {{.app.status.operationState.message}}
+
+  # Triggers - when to send notifications
+  trigger.on-deployed: |
+    - when: app.status.operationState.phase in ['Succeeded']
+      send: [app-deployed]
+
+  trigger.on-sync-failed: |
+    - when: app.status.operationState.phase in ['Error', 'Failed']
+      send: [app-sync-failed]
+
+  trigger.on-health-degraded: |
+    - when: app.status.health.status == 'Degraded'
+      send: [app-health-degraded]
+
+  # Default triggers for all apps with notifications enabled
+  defaultTriggers: |
+    - on-deployed
+    - on-sync-failed
+    - on-health-degraded
