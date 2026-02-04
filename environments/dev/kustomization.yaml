@@ -21,4 +21,4 @@ images:
     newTag: dev # danify-fe
   - name: danify-api
     newName: ghcr.io/danify-cz/danify-api
-    newTag: dev-a82db79 # danify-api
+    newTag: dev-fbcc4ac # danify-api
