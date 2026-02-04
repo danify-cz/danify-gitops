@@ -4,69 +4,33 @@ metadata:
   name: argocd-notifications-cm
   namespace: argocd
 data:
-  # Webhook service for Discord
   service.webhook.discord: |
     url: $discord-webhook-url
     headers:
-      - name: Content-Type
-        value: application/json
+    - name: Content-Type
+      value: application/json
 
-  # Message templates - Discord webhook format
   template.app-deployed: |
     webhook:
       discord:
         method: POST
         body: |
-          {
-            "embeds": [{
-              "title": "{{if eq .app.status.operationState.phase \"Succeeded\"}}✅{{else}}❌{{end}} {{.app.metadata.name}} - {{.app.status.operationState.phase}}",
-              "color": {{if eq .app.status.operationState.phase "Succeeded"}}3066993{{else}}15158332{{end}},
-              "fields": [
-                {"name": "Application", "value": "{{.app.metadata.name}}", "inline": true},
-                {"name": "Environment", "value": "{{.app.spec.destination.namespace}}", "inline": true},
-                {"name": "Revision", "value": "`{{.app.status.sync.revision | substr 0 7}}`", "inline": true}
-              ],
-              "footer": {"text": "ArgoCD Notifications"}
-            }]
-          }
+          {"content":"✅ **{{.app.metadata.name}}** deployed to {{.app.spec.destination.namespace}}","embeds":[{"color":3066993,"fields":[{"name":"Revision","value":"{{.app.status.sync.revision}}","inline":true}]}]}
 
   template.app-sync-failed: |
     webhook:
       discord:
         method: POST
         body: |
-          {
-            "embeds": [{
-              "title": "❌ {{.app.metadata.name}} - Sync Failed",
-              "color": 15158332,
-              "fields": [
-                {"name": "Application", "value": "{{.app.metadata.name}}", "inline": true},
-                {"name": "Environment", "value": "{{.app.spec.destination.namespace}}", "inline": true},
-                {"name": "Error", "value": "{{.app.status.operationState.message | substr 0 200}}", "inline": false}
-              ],
-              "footer": {"text": "ArgoCD Notifications"}
-            }]
-          }
+          {"content":"❌ **{{.app.metadata.name}}** sync failed in {{.app.spec.destination.namespace}}"}
 
   template.app-health-degraded: |
     webhook:
       discord:
         method: POST
         body: |
-          {
-            "embeds": [{
-              "title": "⚠️ {{.app.metadata.name}} - Health Degraded",
-              "color": 16776960,
-              "fields": [
-                {"name": "Application", "value": "{{.app.metadata.name}}", "inline": true},
-                {"name": "Health Status", "value": "{{.app.status.health.status}}", "inline": true},
-                {"name": "Sync Status", "value": "{{.app.status.sync.status}}", "inline": true}
-              ],
-              "footer": {"text": "ArgoCD Notifications"}
-            }]
-          }
+          {"content":"⚠️ **{{.app.metadata.name}}** health degraded - status: {{.app.status.health.status}}"}
 
-  # Triggers
   trigger.on-deployed: |
     - when: app.status.operationState.phase in ['Succeeded']
       send: [app-deployed]

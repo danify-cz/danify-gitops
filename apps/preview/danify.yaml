@@ -4,9 +4,9 @@ metadata:
   name: danify-preview
   namespace: argocd
   annotations:
-    notifications.argoproj.io/subscribe.on-deployed.webhook.discord: ""
-    notifications.argoproj.io/subscribe.on-sync-failed.webhook.discord: ""
-    notifications.argoproj.io/subscribe.on-health-degraded.webhook.discord: ""
+    notifications.argoproj.io/subscribe.on-deployed.discord: ""
+    notifications.argoproj.io/subscribe.on-sync-failed.discord: ""
+    notifications.argoproj.io/subscribe.on-health-degraded.discord: ""
 spec:
   project: default
   source:
