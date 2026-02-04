@@ -10,6 +10,13 @@ data:
     - name: Content-Type
       value: application/json
 
+  template.app-sync-running: |
+    webhook:
+      discord:
+        method: POST
+        body: |
+          {"content":"🔄 **{{.app.metadata.name}}** sync started","embeds":[{"color":3447003,"fields":[{"name":"App","value":"{{.app.metadata.name}}","inline":true},{"name":"Namespace","value":"{{.app.spec.destination.namespace}}","inline":true},{"name":"Revision","value":"{{.app.status.sync.revision | substr 0 7}}","inline":true}]}]}
+
   template.app-deployed: |
     webhook:
       discord:
@@ -31,6 +38,10 @@ data:
         body: |
           {"content":"⚠️ **{{.app.metadata.name}}** health degraded","embeds":[{"color":16776960,"fields":[{"name":"App","value":"{{.app.metadata.name}}","inline":true},{"name":"Namespace","value":"{{.app.spec.destination.namespace}}","inline":true},{"name":"Health","value":"{{.app.status.health.status}}","inline":true}]}]}
 
+  trigger.on-sync-running: |
+    - when: app.status.operationState.phase in ['Running']
+      send: [app-sync-running]
+
   trigger.on-deployed: |
     - when: app.status.operationState.phase in ['Succeeded']
       send: [app-deployed]
@@ -48,6 +59,7 @@ data:
     - recipients:
       - discord
       triggers:
+      - on-sync-running
       - on-deployed
       - on-sync-failed
       - on-health-degraded
