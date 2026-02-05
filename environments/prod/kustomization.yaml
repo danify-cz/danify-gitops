@@ -51,3 +51,13 @@ patches:
           limits:
             memory: "1Gi"
             cpu: "1"
+  - target:
+      kind: ConfigMap
+      name: danify-api-config
+    patch: |-
+      - op: add
+        path: /data/BETTER_AUTH_URL
+        value: "https://api.danify.cz"
+      - op: add
+        path: /data/TRUSTED_ORIGINS
+        value: "https://app.danify.cz"
