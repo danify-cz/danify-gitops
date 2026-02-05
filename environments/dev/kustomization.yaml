@@ -22,3 +22,15 @@ images:
   - name: danify-api
     newName: ghcr.io/danify-cz/danify-api
     newTag: dev-b77474d # danify-api
+
+patches:
+  - target:
+      kind: ConfigMap
+      name: danify-api-config
+    patch: |-
+      - op: add
+        path: /data/BETTER_AUTH_URL
+        value: "https://api.dev.danify.cz:9443"
+      - op: add
+        path: /data/TRUSTED_ORIGINS
+        value: "https://app.dev.danify.cz:9443"
