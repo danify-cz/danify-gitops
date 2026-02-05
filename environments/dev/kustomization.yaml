@@ -15,10 +15,10 @@ resources:
 images:
   - name: danify-landing
     newName: ghcr.io/danify-cz/danify-landing
-    newTag: dev-b77474d # danify-landing
+    newTag: dev-7e3ccca # danify-landing
   - name: danify-fe
     newName: ghcr.io/danify-cz/danify-fe
-    newTag: dev-10784b6 # danify-fe
+    newTag: dev-7e3ccca # danify-fe
   - name: danify-api
     newName: ghcr.io/danify-cz/danify-api
     newTag: dev-5340d10 # danify-api
