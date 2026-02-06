@@ -35,3 +35,7 @@ patches:
       - op: add
         path: /data/TRUSTED_ORIGINS
         value: "https://app.dev.danify.cz:9443"
+      # Higher rate limits for dev testing
+      - op: replace
+        path: /data/AI_RATE_LIMIT_MAX
+        value: "50"

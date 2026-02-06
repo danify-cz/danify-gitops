@@ -10,3 +10,12 @@ data:
   HOST: "0.0.0.0"
   PORT: "3000"
   LOG_LEVEL: info
+  # PDF upload limits
+  MAX_PDF_SIZE_MB: "10"
+  # AI rate limiting (per user)
+  AI_RATE_LIMIT_MAX: "10"
+  AI_RATE_LIMIT_WINDOW: "1 minute"
+  # AI retry configuration
+  AI_RETRY_MAX: "3"
+  AI_RETRY_BASE_DELAY_MS: "1000"
+  AI_RETRY_MAX_DELAY_MS: "10000"

@@ -48,3 +48,7 @@ patches:
       - op: add
         path: /data/TRUSTED_ORIGINS
         value: "https://app.preview.danify.cz"
+      # Higher rate limits for preview testing
+      - op: replace
+        path: /data/AI_RATE_LIMIT_MAX
+        value: "30"
