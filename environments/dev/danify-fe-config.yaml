@@ -6,5 +6,5 @@ data:
   config.json: |
     {
       "apiUrl": "https://api.dev.danify.cz:9443",
-      "version": "dev-1c73008"
+      "version": "dev-cf230a8"
     }
