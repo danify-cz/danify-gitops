@@ -22,7 +22,7 @@ images:
     newTag: dev-503b332 # danify-fe
   - name: danify-api
     newName: ghcr.io/danify-cz/danify-api
-    newTag: dev-503b332 # danify-api
+    newTag: dev-f063c5b # danify-api
 
 patches:
   - target:
