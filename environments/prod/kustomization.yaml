@@ -62,3 +62,6 @@ patches:
       - op: add
         path: /data/TRUSTED_ORIGINS
         value: "https://app.danify.cz"
+      - op: add
+        path: /data/FRONTEND_URL
+        value: "https://app.danify.cz"
