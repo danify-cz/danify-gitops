@@ -65,3 +65,6 @@ patches:
       - op: add
         path: /data/FRONTEND_URL
         value: "https://app.danify.cz"
+      - op: add
+        path: /data/BANK_EMAIL_DOMAIN
+        value: "bank.danify.online"
