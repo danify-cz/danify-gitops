@@ -57,4 +57,4 @@ patches:
         value: "30"
       - op: add
         path: /data/BANK_EMAIL_DOMAIN
-        value: "bank-preview.danify.online"
+        value: "danify.online"
