@@ -22,7 +22,7 @@ images:
     newTag: "dev-5676663" # danify-fe
   - name: danify-api
     newName: ghcr.io/danify-cz/danify-api
-    newTag: "dev-5676663" # danify-api
+    newTag: "dev-3ebf2fe" # danify-api
 
 patches:
   - target:
