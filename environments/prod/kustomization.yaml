@@ -20,7 +20,7 @@ images:
     newTag: "1.1.0" # danify-landing
   - name: danify-fe
     newName: ghcr.io/danify-cz/danify-fe
-    newTag: "1.24.0" # danify-fe
+    newTag: "1.24.1" # danify-fe
   - name: danify-api
     newName: ghcr.io/danify-cz/danify-api
     newTag: "1.22.0" # danify-api
