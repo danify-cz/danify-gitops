@@ -1,0 +1,12 @@
+[Unit]
+Description=Restart k3s-agent if flannel.1 disappears (preview cluster self-heal)
+Documentation=https://github.com/danify-cz/danify-app/issues/127
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/flannel-watchdog.sh
+# Service is short-lived; the timer drives the schedule.
+
+[Install]
+WantedBy=multi-user.target
