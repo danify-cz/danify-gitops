@@ -68,3 +68,10 @@ patches:
       - op: add
         path: /data/BANK_EMAIL_DOMAIN
         value: "danify.online"
+      # Email service (Resend) — no dev redirect on prod, real emails to users
+      - op: add
+        path: /data/EMAIL_FROM
+        value: "Danify <noreply@mail.danify.cz>"
+      - op: add
+        path: /data/EMAIL_APP_NAME
+        value: "Danify"

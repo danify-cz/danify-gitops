@@ -58,3 +58,14 @@ patches:
       - op: add
         path: /data/BANK_EMAIL_DOMAIN
         value: "danify.online"
+      # Email service (Resend)
+      - op: add
+        path: /data/EMAIL_FROM
+        value: "Danify PREVIEW <noreply@mail.danify.cz>"
+      - op: add
+        path: /data/EMAIL_APP_NAME
+        value: "Danify PREVIEW"
+      # Dev redirect on preview — emails go to martin@danify.cz to avoid spamming real users
+      - op: add
+        path: /data/EMAIL_DEV_REDIRECT
+        value: "martin@danify.cz"
