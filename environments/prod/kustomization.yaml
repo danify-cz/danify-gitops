@@ -75,3 +75,12 @@ patches:
       - op: add
         path: /data/EMAIL_APP_NAME
         value: "Danify"
+      # Sentry — gh#190 slice 5. SENTRY_DSN je v sealed secretu (danify-api-secret).
+      # SENTRY_RELEASE mirrors prod git tag (danify-api@1.33.0 apod.) — bude
+      # dynamicky patchnut production-deploy.yaml workflowem v gitops repu.
+      - op: add
+        path: /data/SENTRY_ENVIRONMENT
+        value: "production"
+      - op: add
+        path: /data/SENTRY_RELEASE
+        value: "danify-api@1.33.0"

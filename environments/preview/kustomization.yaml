@@ -69,3 +69,12 @@ patches:
       - op: add
         path: /data/EMAIL_DEV_REDIRECT
         value: "martin@danify.cz"
+      # Sentry — gh#190 slice 5. SENTRY_DSN je v sealed secretu (danify-api-secret).
+      # SENTRY_RELEASE mirrors dev SHA (preview image je retag z dev) — bude
+      # dynamicky patchnut staging-deploy.yaml workflowem v gitops repu.
+      - op: add
+        path: /data/SENTRY_ENVIRONMENT
+        value: "preview"
+      - op: add
+        path: /data/SENTRY_RELEASE
+        value: "danify-api@dev"
