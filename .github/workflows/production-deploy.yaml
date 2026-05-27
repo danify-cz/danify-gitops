@@ -76,6 +76,14 @@ jobs:
             sed -i "s/newTag: .* # danify-landing/newTag: \"$DANIFY_LANDING_VERSION\" # danify-landing/" kustomization.yaml
           fi
 
+          # Update version in danify-fe-config.yaml (FE bundle reads window.__APP_CONFIG__.version
+          # as Sentry release name fallback per gh#190 slice 3 design — must match prod image
+          # version, otherwise Sentry events would be tagged with the stale ConfigMap value).
+          if [ -f "danify-fe-config.yaml" ] && [ -n "$DANIFY_FE_VERSION" ] && [ "$DANIFY_FE_VERSION" != "null" ]; then
+            echo "Updating fe-config version to $DANIFY_FE_VERSION"
+            sed -i "s/\"version\": \".*\"/\"version\": \"$DANIFY_FE_VERSION\"/" danify-fe-config.yaml
+          fi
+
           echo "Updated kustomization.yaml:"
           cat kustomization.yaml
 
