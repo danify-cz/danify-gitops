@@ -6,7 +6,7 @@ data:
   config.json: |
     {
       "apiUrl": "https://api.dev.danify.cz:9443",
-      "version": "dev-ea7069e",
+      "version": "dev-1eb85f3",
       "sentryDsn": "https://e57eb7f6466a2f2b6f586dd3d3ad6c2a@o4511461083447296.ingest.de.sentry.io/4511461098389584",
       "sentryEnvironment": "dev"
     }
