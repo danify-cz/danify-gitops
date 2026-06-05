@@ -42,6 +42,10 @@ patches:
       - op: replace
         path: /data/AI_RATE_LIMIT_MAX
         value: "50"
+      # AI Gateway (#288) — enabled on dev for testing (key in danify-api-secret)
+      - op: add
+        path: /data/AI_GATEWAY_ENABLED
+        value: "true"
       - op: add
         path: /data/BANK_EMAIL_DOMAIN
         value: "danify.online"
