@@ -65,6 +65,10 @@ patches:
       - op: add
         path: /data/FRONTEND_URL
         value: "https://app.danify.cz"
+      # AI Gateway (#288) — enabled on prod (key in danify-api-secret)
+      - op: add
+        path: /data/AI_GATEWAY_ENABLED
+        value: "true"
       - op: add
         path: /data/BANK_EMAIL_DOMAIN
         value: "danify.online"
