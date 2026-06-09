@@ -19,7 +19,7 @@ images:
     newTag: "dev-ef093d7" # danify-landing
   - name: danify-fe
     newName: ghcr.io/danify-cz/danify-fe
-    newTag: "dev-7b0deb9" # danify-fe
+    newTag: "dev-c22e6d9" # danify-fe
   - name: danify-api
     newName: ghcr.io/danify-cz/danify-api
     newTag: "dev-7b0deb9" # danify-api
