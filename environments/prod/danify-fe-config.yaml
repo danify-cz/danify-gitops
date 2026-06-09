@@ -8,5 +8,6 @@ data:
       "apiUrl": "https://api.danify.cz",
       "version": "1.43.0",
       "sentryDsn": "https://e57eb7f6466a2f2b6f586dd3d3ad6c2a@o4511461083447296.ingest.de.sentry.io/4511461098389584",
-      "sentryEnvironment": "production"
+      "sentryEnvironment": "production",
+      "sentryRelease": "danify-fe@dev-c22e6d9"
     }
