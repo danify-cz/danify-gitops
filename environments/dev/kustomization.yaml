@@ -16,7 +16,7 @@ resources:
 images:
   - name: danify-landing
     newName: ghcr.io/danify-cz/danify-landing
-    newTag: dev-ef093d7 # danify-landing
+    newTag: dev-6d59c10 # danify-landing
   - name: danify-fe
     newName: ghcr.io/danify-cz/danify-fe
     newTag: dev-6d59c10 # danify-fe
