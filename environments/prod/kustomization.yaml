@@ -23,7 +23,7 @@ images:
     newTag: "1.52.1" # danify-fe
   - name: danify-api
     newName: ghcr.io/danify-cz/danify-api
-    newTag: "1.48.3" # danify-api
+    newTag: "1.48.4" # danify-api
 
 patches:
   - target:
