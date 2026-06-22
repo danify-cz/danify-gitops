@@ -10,6 +10,7 @@ resources:
   - ../base/postgresql
   - ingress.yaml
   - basic-auth-secret.yaml
+  - cloudflare-origin-pull-ca-secret.yaml
   - danify-fe-config.yaml
   - danify-api-sealed-secret.yaml
   # ghcr-secret.yaml - managed outside ArgoCD
