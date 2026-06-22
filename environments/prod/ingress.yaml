@@ -10,6 +10,13 @@ metadata:
     nginx.ingress.kubernetes.io/auth-secret: basic-auth
     nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required'
     cert-manager.io/cluster-issuer: letsencrypt-cloudflare
+    # Authenticated Origin Pulls (gh#394 #2) — přijmi jen provoz z Cloudflare
+    # (klientský cert proti CF origin-pull CA). ⚠️ MERGOVAT AŽ když je AOP
+    # zapnuté na CF zóně danify.cz A existuje secret danify/cloudflare-origin-pull-ca,
+    # jinak nginx odmítne VŠECHEN provoz na danify hosty (400). Viz runbook.
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: 'on'
+    nginx.ingress.kubernetes.io/auth-tls-secret: 'danify/cloudflare-origin-pull-ca'
+    nginx.ingress.kubernetes.io/auth-tls-verify-depth: '1'
 spec:
   ingressClassName: nginx
   tls:
@@ -61,6 +68,11 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-read-timeout: '60'
     nginx.ingress.kubernetes.io/proxy-send-timeout: '60'
     cert-manager.io/cluster-issuer: letsencrypt-cloudflare
+    # Authenticated Origin Pulls (gh#394 #2) — viz danify-ingress výše.
+    # ⚠️ MERGOVAT AŽ po zapnutí AOP na CF + vytvoření secretu, jinak 400 na api.danify.cz.
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: 'on'
+    nginx.ingress.kubernetes.io/auth-tls-secret: 'danify/cloudflare-origin-pull-ca'
+    nginx.ingress.kubernetes.io/auth-tls-verify-depth: '1'
 spec:
   ingressClassName: nginx
   tls:
