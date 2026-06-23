@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-backup-config
+  labels:
+    app.kubernetes.io/name: postgres-backup
+    app.kubernetes.io/component: database-backup
+data:
+  # Non-secret backup config. R2 credentials + Discord webhook live in the
+  # SealedSecret postgres-backup-secret (gh#418).
+  R2_BUCKET: danify-db-backups
+  R2_ENDPOINT: https://9ea0485a9452a594c2b60cdecb0b90fc.r2.cloudflarestorage.com
+  # Public age recipient key. Backups are encrypted client-side BEFORE leaving
+  # the cluster. The matching AGE-SECRET-KEY (needed to restore) is NOT in the
+  # cluster — it lives only in 1Password (item danify-db-backup).
+  AGE_PUBLIC_KEY: age1pg5fugvdqjzfc45qa6xn7z3cahd65s6yk9quj2t362y9apvlgqxs4dgcrw
+  # Object key prefix in the bucket. Retention (30d) is enforced by an R2
+  # lifecycle rule (expire-30d), not by the job — no prune step needed.
+  BACKUP_PREFIX: daily

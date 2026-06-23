@@ -13,6 +13,10 @@ resources:
   - cloudflare-origin-pull-ca-secret.yaml
   - danify-fe-config.yaml
   - danify-api-sealed-secret.yaml
+  # Postgres backup (gh#418) — daily pg_dump → age-encrypt → R2, prod-only
+  - postgres-backup-config.yaml
+  - postgres-backup-sealed-secret.yaml
+  - postgres-backup-cronjob.yaml
   # ghcr-secret.yaml - managed outside ArgoCD
 
 images:

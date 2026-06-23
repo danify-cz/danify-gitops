@@ -1,0 +1,101 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+  labels:
+    app.kubernetes.io/name: postgres-backup
+    app.kubernetes.io/component: database-backup
+spec:
+  # 02:00 Europe/Prague daily. Retention handled by R2 lifecycle rule expire-30d.
+  schedule: "0 2 * * *"
+  timeZone: "Europe/Prague"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 600
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 7
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 3600
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: postgres-backup
+            app.kubernetes.io/component: database-backup
+        spec:
+          restartPolicy: Never
+          # Runs as root so the entrypoint can `apk add` the backup tooling
+          # (age / rclone / curl). A prebuilt image would let us drop root —
+          # tracked as Fáze-2 hardening in gh#418.
+          containers:
+            - name: backup
+              image: postgres:16-alpine
+              # DB creds come from the SAME secret postgres uses, so user /
+              # password / dbname always match the running server.
+              envFrom:
+                - secretRef:
+                    name: postgresql-secret
+                - configMapRef:
+                    name: postgres-backup-config
+                - secretRef:
+                    name: postgres-backup-secret
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -euo pipefail
+
+                  notify() {
+                    [ -n "${DISCORD_WEBHOOK_URL:-}" ] || return 0
+                    curl -fsS -m 15 -H 'Content-Type: application/json' \
+                      -d "{\"content\": \"$1\"}" "$DISCORD_WEBHOOK_URL" >/dev/null 2>&1 || true
+                  }
+                  fail() {
+                    notify "🔴 Danify prod DB backup FAILED — $(date -u +%Y-%m-%dT%H:%M:%SZ). Check CronJob postgres-backup logs (ns danify)."
+                  }
+                  trap fail ERR
+
+                  echo "Installing backup tooling (age, rclone, curl)..."
+                  apk add --no-cache age rclone curl >/dev/null
+
+                  TS="$(date -u +%Y%m%d-%H%M%S)"
+                  DUMP="/tmp/danify-${TS}.dump"
+                  ENC="${DUMP}.age"
+                  KEY="${BACKUP_PREFIX}/danify-${TS}.dump.age"
+
+                  echo "Dumping database '${POSTGRES_DB}' from postgresql:5432..."
+                  PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -Fc \
+                    -h postgresql -U "$POSTGRES_USER" "$POSTGRES_DB" -f "$DUMP"
+                  echo "Dump OK — size $(du -h "$DUMP" | cut -f1)"
+
+                  echo "Encrypting with age (recipient ${AGE_PUBLIC_KEY})..."
+                  age -r "$AGE_PUBLIC_KEY" -o "$ENC" "$DUMP"
+
+                  echo "Uploading to r2:${R2_BUCKET}/${KEY}..."
+                  export RCLONE_CONFIG_R2_TYPE=s3
+                  export RCLONE_CONFIG_R2_PROVIDER=Cloudflare
+                  export RCLONE_CONFIG_R2_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID"
+                  export RCLONE_CONFIG_R2_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY"
+                  export RCLONE_CONFIG_R2_ENDPOINT="$R2_ENDPOINT"
+                  # Scoped R2 token is object-only; skip rclone's bucket-exists
+                  # check (it tries CreateBucket → 403). Verified on dev (gh#418).
+                  export RCLONE_CONFIG_R2_NO_CHECK_BUCKET=true
+                  rclone copyto "$ENC" "r2:${R2_BUCKET}/${KEY}"
+
+                  echo "Verifying object exists in bucket..."
+                  rclone lsf "r2:${R2_BUCKET}/${KEY}" | grep -q .
+
+                  echo "Backup complete: ${KEY}"
+              resources:
+                requests:
+                  memory: "128Mi"
+                  cpu: "100m"
+                limits:
+                  memory: "512Mi"
+                  cpu: "500m"
+              volumeMounts:
+                - name: work
+                  mountPath: /tmp
+          volumes:
+            - name: work
+              emptyDir:
+                sizeLimit: 2Gi
