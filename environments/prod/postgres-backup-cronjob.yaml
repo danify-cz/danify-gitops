@@ -49,13 +49,22 @@ spec:
                     curl -fsS -m 15 -H 'Content-Type: application/json' \
                       -d "{\"content\": \"$1\"}" "$DISCORD_WEBHOOK_URL" >/dev/null 2>&1 || true
                   }
+                  # healthchecks.io dead-man's switch (gh#421). Best-effort; never
+                  # fails the backup. If the job dies before it can ping, the
+                  # MISSING ping is what triggers the external alert — that's the point.
+                  hc() {
+                    [ -n "${HC_PING_URL:-}" ] || return 0
+                    curl -fsS -m 10 "${HC_PING_URL}${1:-}" >/dev/null 2>&1 || true
+                  }
                   fail() {
+                    hc /fail
                     notify "🔴 Danify prod DB backup FAILED — $(date -u +%Y-%m-%dT%H:%M:%SZ). Check CronJob postgres-backup logs (ns danify)."
                   }
                   trap fail ERR
 
                   echo "Installing backup tooling (age, rclone, curl)..."
                   apk add --no-cache age rclone curl >/dev/null
+                  hc /start
 
                   TS="$(date -u +%Y%m%d-%H%M%S)"
                   DUMP="/tmp/danify-${TS}.dump"
@@ -87,6 +96,7 @@ spec:
 
                   echo "Backup complete: ${KEY}"
                   notify "✅ Danify prod DB backup OK — $(date -u +%Y-%m-%dT%H:%M:%SZ), ${SIZE} → ${KEY}"
+                  hc
               resources:
                 requests:
                   memory: "128Mi"

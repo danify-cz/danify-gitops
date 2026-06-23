@@ -19,7 +19,8 @@ Cloudflare R2, plus the step-by-step restore procedure.
 | **Encryption** | `age` — client-side, **before** leaving the cluster |
 | **Destination** | R2 bucket `danify-db-backups`, key `daily/danify-<UTC-ts>.dump.age` |
 | **Retention** | 30 days — enforced by R2 lifecycle rule `expire-30d` (not by the job) |
-| **On failure** | `trap ERR` → Discord webhook → `#` channel (silent fail = worst case) |
+| **On failure** | `trap ERR` → Discord webhook + healthchecks.io `/fail` ping |
+| **Didn't run at all** | healthchecks.io dead-man's switch alerts if no ping in the window (gh#421) |
 
 ### Pipeline
 
@@ -198,6 +199,20 @@ kubectl --context toxify-prod -n danify get cronjob postgres-backup
 ```bash
 wrangler r2 object list danify-db-backups --prefix daily/ --remote | tail
 ```
+
+### Monitoring — healthchecks.io dead-man's switch (gh#421)
+
+Discord tells you when a backup **ran** (✅/🔴). healthchecks.io is the safety
+net for when the backup **never runs at all** (CronJob deleted, scheduler dead,
+cluster down) — it alerts when the expected daily ping doesn't arrive.
+
+- Check: **`danify-prod-db-backup`**, schedule `0 2 * * *` Europe/Prague, grace 1h
+- Dashboard: <https://healthchecks.io> (project `danify`)
+- The job pings 3 ways (best-effort, never fails the backup):
+  `…/start` after tooling install, bare URL on success, `…/fail` in the ERR trap
+- Ping URL is in the sealed secret as `HC_PING_URL` (1Password item `danify-db-backup`)
+- **Env-gated**: if `HC_PING_URL` is unset, pings are skipped (local/dev)
+- Configure the alert target (email/Discord) in healthchecks.io → Integrations
 
 ---
 
