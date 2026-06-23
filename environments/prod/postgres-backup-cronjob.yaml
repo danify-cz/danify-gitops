@@ -65,7 +65,8 @@ spec:
                   echo "Dumping database '${POSTGRES_DB}' from postgresql:5432..."
                   PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -Fc \
                     -h postgresql -U "$POSTGRES_USER" "$POSTGRES_DB" -f "$DUMP"
-                  echo "Dump OK — size $(du -h "$DUMP" | cut -f1)"
+                  SIZE="$(du -h "$DUMP" | cut -f1)"
+                  echo "Dump OK — size ${SIZE}"
 
                   echo "Encrypting with age (recipient ${AGE_PUBLIC_KEY})..."
                   age -r "$AGE_PUBLIC_KEY" -o "$ENC" "$DUMP"
@@ -85,6 +86,7 @@ spec:
                   rclone lsf "r2:${R2_BUCKET}/${KEY}" | grep -q .
 
                   echo "Backup complete: ${KEY}"
+                  notify "✅ Danify prod DB backup OK — $(date -u +%Y-%m-%dT%H:%M:%SZ), ${SIZE} → ${KEY}"
               resources:
                 requests:
                   memory: "128Mi"
