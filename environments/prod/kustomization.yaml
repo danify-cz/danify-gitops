@@ -25,10 +25,10 @@ images:
     newTag: "1.1.0" # danify-landing
   - name: danify-fe
     newName: ghcr.io/danify-cz/danify-fe
-    newTag: "1.55.0" # danify-fe
+    newTag: "1.56.0" # danify-fe
   - name: danify-api
     newName: ghcr.io/danify-cz/danify-api
-    newTag: "1.52.1" # danify-api
+    newTag: "1.53.0" # danify-api
 
 patches:
   - target:
