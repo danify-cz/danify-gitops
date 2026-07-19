@@ -19,10 +19,10 @@ images:
     newTag: "dev-e849066" # danify-landing
   - name: danify-fe
     newName: ghcr.io/danify-cz/danify-fe
-    newTag: "dev-8e2ae4f" # danify-fe
+    newTag: "dev-867c9af" # danify-fe
   - name: danify-api
     newName: ghcr.io/danify-cz/danify-api
-    newTag: "dev-8e2ae4f" # danify-api
+    newTag: "dev-867c9af" # danify-api
 
 patches:
   - target:
