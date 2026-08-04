@@ -69,3 +69,10 @@ patches:
       - op: add
         path: /data/SENTRY_RELEASE
         value: "danify-api@dev"
+      # App Attest — dev-signed buildy z Xcode na reálném iPhonu (gh#474).
+      # Simulátor DCAppAttestService nemá, takže testovat jde jen na zařízení.
+      # BE tuhle hodnotu ctí jen když SENTRY_ENVIRONMENT je dev nebo preview
+      # (allowlist) — v produkci je vynuceně ignorovaná, ale sem stejně nepatří.
+      - op: add
+        path: /data/APP_ATTEST_ALLOW_DEV
+        value: "true"

@@ -19,3 +19,12 @@ data:
   AI_RETRY_MAX: "3"
   AI_RETRY_BASE_DELAY_MS: "1000"
   AI_RETRY_MAX_DELAY_MS: "10000"
+  # Apple App Attest — mobilní auth pro iOS klienta (gh#474)
+  # APPLE_TEAM_ID je v sealed secretu (danify-api-secret) per env.
+  #
+  # POZOR na očekávání u APP_ATTEST_ENABLED: guard v BE přeskakuje attestaci
+  # jen když NODE_ENV != production, což v žádném clusteru neplatí. Tahle
+  # proměnná je fakticky přepínač pro lokální vývoj a marker konfigurace pro
+  # boot-time kontrolu — attestaci jí v clusteru vypnout NELZE.
+  APP_ATTEST_ENABLED: "true"
+  IOS_BUNDLE_ID: cz.danify.app
