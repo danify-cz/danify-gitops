@@ -42,20 +42,6 @@ patches:
       - op: replace
         path: /data/AI_RATE_LIMIT_MAX
         value: "50"
-      # Mobile sign-in (gh#474). Dev is not behind Cloudflare, so the
-      # CF-Connecting-IP header getClientIp() relies on is absent and the
-      # limiter falls back to request.ip — which is the ingress (10.42.x),
-      # not the client. The per-IP bucket therefore collapses into a single
-      # global one shared by everyone, and the default 5/15min locks the
-      # whole environment out during iOS device testing.
-      # Raised here so testing is possible; the real fix is a per-account
-      # limit, tracked separately.
-      - op: add
-        path: /data/RATE_LIMIT_MOBILE_SIGNIN_MAX
-        value: "100"
-      - op: add
-        path: /data/RATE_LIMIT_MOBILE_CHALLENGE_MAX
-        value: "300"
       # AI Gateway (#288) — enabled on dev for testing (key in danify-api-secret)
       - op: add
         path: /data/AI_GATEWAY_ENABLED
