@@ -29,15 +29,21 @@ patches:
       kind: Deployment
       name: danify-api
     patch: |-
+      # CPU zvednuto z 300m na 1000m. Preview sdílí node ssdnodes-storage1
+      # s k3s control-plane a s Coolify v Dockeru — load average tam drží
+      # kolem 12 na 8 jádrech. Za 0,3 jádra se aplikace v té kontenci
+      # nenastartovala vůbec a skončila v crashloopu.
+      #
+      # Paměť zůstává: pod bral 41Mi z 384Mi, tam problém nebyl.
       - op: replace
         path: /spec/template/spec/containers/0/resources
         value:
           requests:
             memory: "192Mi"
-            cpu: "75m"
+            cpu: "150m"
           limits:
             memory: "384Mi"
-            cpu: "300m"
+            cpu: "1000m"
   - target:
       kind: ConfigMap
       name: danify-api-config

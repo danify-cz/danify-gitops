@@ -48,22 +48,34 @@ spec:
             limits:
               memory: '256Mi'
               cpu: '200m'
+          # timeoutSeconds je všude explicitně, protože implicitní hodnota je
+          # 1 s a to je na Node aplikaci za sdíleným CPU limitem málo. Na
+          # preview to shodilo danify-api do crashloopu (1126 restartů), zatímco
+          # samotná aplikace byla v pořádku — /health se prostě nestihl vrátit
+          # do sekundy, když node běžel na load average 12.
           startupProbe:
             httpGet:
               path: /health
               port: 3000
-            failureThreshold: 30
+            # 60 × 5 s = 5 minut na start. Původních 30 (150 s) nestačilo:
+            # migrace + registrace pluginů za 0,3 jádra na zatíženém nodu se
+            # do toho okna nevejde a kontejner dostane SIGKILL dřív, než se
+            # vůbec dostane k `listen`.
+            failureThreshold: 60
             periodSeconds: 5
+            timeoutSeconds: 5
           livenessProbe:
             httpGet:
               path: /health
               port: 3000
             periodSeconds: 10
+            timeoutSeconds: 5
           readinessProbe:
             httpGet:
               path: /health
               port: 3000
             periodSeconds: 5
+            timeoutSeconds: 5
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
