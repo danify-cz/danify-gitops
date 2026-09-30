@@ -16,13 +16,13 @@ resources:
 images:
   - name: danify-landing
     newName: ghcr.io/danify-cz/danify-landing
-    newTag: dev-adcefd7 # danify-landing
+    newTag: dev-e487498 # danify-landing
   - name: danify-fe
     newName: ghcr.io/danify-cz/danify-fe
-    newTag: dev-6d0947a # danify-fe
+    newTag: dev-e487498 # danify-fe
   - name: danify-api
     newName: ghcr.io/danify-cz/danify-api
-    newTag: dev-35cef99 # danify-api
+    newTag: dev-e487498 # danify-api
 
 patches:
   - target:
