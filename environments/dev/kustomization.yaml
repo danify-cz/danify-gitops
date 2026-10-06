@@ -19,10 +19,10 @@ images:
     newTag: dev-be616e8 # danify-landing
   - name: danify-fe
     newName: ghcr.io/danify-cz/danify-fe
-    newTag: dev-918adfc # danify-fe
+    newTag: dev-501f9cb # danify-fe
   - name: danify-api
     newName: ghcr.io/danify-cz/danify-api
-    newTag: dev-918adfc # danify-api
+    newTag: dev-501f9cb # danify-api
 
 patches:
   - target:
